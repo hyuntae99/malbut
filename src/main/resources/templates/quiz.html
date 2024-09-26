@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Korean Vocabulary Quiz</title>
+  <link rel="icon" href="https://velog.velcdn.com/images/hyuntae99/post/0f517bf1-f894-4531-b59a-f239b07a7be2/image.png" type="image/png">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-image: url('https://velog.velcdn.com/images/hyuntae99/post/5ffe71de-8cc4-4864-b942-fac84c544b42/image.png');
+      background-size: contain; /* 이미지가 화면에 맞게 채워지도록 설정 */
+      background-position: center center; /* 이미지의 중심을 화면에 맞춤 */
+      background-repeat: no-repeat; /* 이미지 반복을 방지 */
+      background-attachment: fixed; /* 배경 이미지 고정 */
+      position: relative;
+      overflow: hidden;
+    }
+
+    .bottom-right-logo {
+      position: fixed;
+      right: -20px;
+      bottom: 10px;
+      width: 200px;
+      height: 200px;
+    }
+
+    .quiz-container {
+      background-color: white;
+      padding: 30px;
+      border-radius: 20px;
+      max-width: 800px;
+      width: 100%;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+      text-align: center;
+      display: none; /* 초기에는 보이지 않도록 */
+    }
+
+    .level-selection {
+      background-color: white;
+      padding: 20px; /* 패딩 크기 줄이기 */
+      border-radius: 10px; /* 둥근 모서리 크기 조정 */
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* 그림자 크기 조정 */
+      text-align: center;
+      display: flex;
+      justify-content: center; /* 가운데 정렬 */
+      width: 100%;
+      max-width: 600px; /* 박스 크기 줄이기 */
+      flex-direction: column; /* 수직 배치 */
+      margin-bottom: 20px;
+    }
+
+    .level-selection h2 {
+      margin-bottom: 15px; /* 제목과 버튼 사이 간격 */
+    }
+
+    .level-selection button {
+      padding: 15px; /* 버튼 패딩 크기 줄이기 */
+      margin: 8px;
+      font-size: 1.3rem; /* 버튼 글씨 크기 약간 줄이기 */
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.2s ease; /* 호버 효과에 부드러운 애니메이션 추가 */
+    }
+
+    /* 난이도 선택 버튼 색상 */
+    .level-selection button:nth-child(1) {
+      background-color: #FF6F91; /* Beginner */
+    }
+
+    .level-selection button:nth-child(1):hover {
+      background-color: #FF4567; /* 호버 시 더 짙은 색상 */
+      transform: scale(1.05); /* 호버 시 살짝 커지게 */
+    }
+
+    .level-selection button:nth-child(2) {
+      background-color: #4D94FF; /* Intermediate */
+    }
+
+    .level-selection button:nth-child(2):hover {
+      background-color: #266AFF; /* 호버 시 더 짙은 색상 */
+      transform: scale(1.05); /* 호버 시 살짝 커지게 */
+    }
+
+    /* Advanced 버튼 배경색을 더 진하게 변경 */
+    .level-selection button:nth-child(3) {
+      background-color: #003d3d; /* 진한 초록색 */
+    }
+
+    .level-selection button:nth-child(3):hover {
+      background-color: #002828; /* 호버 시 더 짙은 색상 */
+      transform: scale(1.05); /* 호버 시 살짝 커지게 */
+    }
+
+    .question-number {
+      position: absolute;
+      top: 10px;
+      right: 20px;
+      font-size: 1.5rem;
+      color: #555;
+    }
+
+    .question {
+      font-size: 3rem;
+      margin-bottom: 60px;
+      color: #333;
+      font-weight: bold;
+    }
+
+    .choices {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+      width: 100%;
+    }
+
+    .choices button {
+      padding: 20px;
+      width: 50%;
+      border: none;
+      border-radius: 10px;
+      font-size: 1.5rem;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+    .choices button:nth-child(1) {
+      background-color: #FF6F91;
+    }
+
+    .choices button:nth-child(2) {
+      background-color: #FF9966;
+    }
+
+    .choices button:nth-child(3) {
+      background-color: #4D94FF;
+    }
+
+    .choices button:nth-child(4) {
+      background-color: #33CC99;
+    }
+
+    .submit-button {
+      padding: 15px;
+      background-color: #4CAF50;
+      color: white;
+      font-size: 1.5rem;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-top: 40px;
+      display: none;
+    }
+
+    .popup {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: white;
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+      text-align: center;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .popup .result-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 15px;
+      font-size: 1.2rem;
+    }
+
+    .popup .result-item span {
+      flex: 1;
+      text-align: left;
+    }
+
+    .popup .result-item span:last-child {
+      text-align: right;
+    }
+
+    .popup .correct {
+      color: green;
+    }
+
+    .popup .incorrect {
+      color: red;
+    }
+
+    .popup .score-grade {
+      margin-top: 40px;
+    }
+
+    .popup .close-button {
+      padding: 15px;
+      background-color: #f44336;
+      color: white;
+      font-size: 1.5rem;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+
+    /* 물방울 효과 스타일 */
+    .drop {
+      position: absolute;
+      border-radius: 50%;
+      background: lightpink;
+      transform: scale(0);
+      animation: drop 0.6s linear;
+      pointer-events: none;
+    }
+
+    @keyframes drop {
+      to {
+        transform: scale(1);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+<img src="https://velog.velcdn.com/images/hyuntae99/post/0f517bf1-f894-4531-b59a-f239b07a7be2/image.png" alt="Logo" class="bottom-right-logo">
+<div class="level-selection">
+  <h2>Select Difficulty</h2>
+  <div class="button-container">
+    <button onclick="selectLevel('beginner')">Beginner</button>
+    <button onclick="selectLevel('intermediate')">Intermediate</button>
+    <button onclick="selectLevel('advanced')">Advanced</button>
+  </div>
+</div>
+<div class="quiz-container">
+  <div class="question-number" id="question-number">1/20</div>
+  <div id="question" class="question"></div>
+  <div id="choices" class="choices"></div>
+  <button id="submit" class="submit-button" onclick="submitQuiz()">Result</button>
+</div>
+
+<div class="popup" id="popup">
+  <div id="results" class="results"></div>
+  <div class="score-grade">
+    <div id="score" style="font-size: 2rem; color: #4CAF50;"></div>
+    <button class="close-button" onclick="closePopup()">Close</button>
+  </div>
+</div>
+
+<script>
+  let questions = [];
+  let currentQuestion = 0;
+  let answers = [];
+  let selectedLevel = '';
+  const apiKey = "[[${apiKey}]]";
+
+  // 난이도 선택 후 퀴즈 시작
+  function selectLevel(level) {
+    selectedLevel = level;
+    document.querySelector('.level-selection').style.display = 'none';
+    document.querySelector('.quiz-container').style.display = 'block';
+    loadQuiz();
+  }
+
+  // 퀴즈 로드
+  function loadQuiz() {
+    fetch(`http://localhost:9000/api/quiz/start?level=${selectedLevel}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      questions = data;
+      displayQuestion();
+    });
+  }
+
+  function displayQuestion() {
+    const question = questions[currentQuestion];
+    document.getElementById('question').innerText = question.korean;
+    document.getElementById('question-number').innerText = `${currentQuestion + 1}/${questions.length}`;
+
+    const choicesContainer = document.getElementById('choices');
+    choicesContainer.innerHTML = '';
+    question.choices.forEach(choice => {
+      const button = document.createElement('button');
+      button.innerText = choice;
+      button.onclick = () => checkAnswer(choice, question.correctAnswer);
+      choicesContainer.appendChild(button);
+    });
+  }
+
+  function checkAnswer(selectedChoice, correctAnswer) {
+    const isCorrect = selectedChoice === correctAnswer;
+    answers.push({ userAnswer: selectedChoice, correctAnswer: correctAnswer, isCorrect: isCorrect });
+
+    currentQuestion++;
+
+    if (currentQuestion < questions.length) {
+      displayQuestion();
+    } else {
+      document.getElementById('question').innerText = 'Quiz Completed!';
+      document.getElementById('choices').innerHTML = '';
+      document.getElementById('submit').style.display = 'block';
+      document.getElementById('question-number').style.display = 'none';
+    }
+  }
+
+  function submitQuiz() {
+    fetch('http://localhost:9000/api/quiz/grade', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key' : apiKey
+      },
+      body: JSON.stringify(answers),
+    })
+    .then(response => response.json())
+    .then(data => {
+      showPopup(data.score, data.grade);
+    });
+  }
+
+  function showPopup(score, grade) {
+    const resultsContainer = document.getElementById('results');
+    resultsContainer.innerHTML = '';
+
+    answers.forEach((answer, index) => {
+      const resultItem = document.createElement('div');
+      resultItem.className = 'result-item';
+      resultItem.innerHTML = `
+                <span>Q${index + 1}: ${questions[index].korean}</span>
+        <span>Your answer: ${answer.userAnswer}</span>
+        <span>Correct answer: ${answer.correctAnswer}</span>
+        <span class="${answer.isCorrect ? 'correct' : 'incorrect'}">
+          ${answer.isCorrect ? 'O' : 'X'}
+        </span>
+      `;
+      resultsContainer.appendChild(resultItem);
+    });
+
+    // 점수와 등급 표시
+    document.getElementById('score').innerText = `Your score: ${score}`;
+
+    document.getElementById('popup').style.display = 'block'; // 팝업 표시
+  }
+
+  function closePopup() {
+    window.location.href = 'http://localhost:9000'; // 메인 페이지로 이동
+  }
+
+  // 물방울 효과 이벤트 리스너 추가
+  document.body.addEventListener('click', function(e) {
+    const drop = document.createElement('div');
+    drop.className = 'drop';
+    drop.style.width = '60px';
+    drop.style.height = '60px';
+    drop.style.left = `${e.clientX - 30}px`;
+    drop.style.top = `${e.clientY - 30}px`;
+    document.body.appendChild(drop);
+    setTimeout(() => {
+      drop.remove();
+    }, 600);
+  });
+</script>
+</body>
+</html>
+

@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat with Your Friendly Korean Tutor</title>
+  <link rel="icon" href="https://velog.velcdn.com/images/hyuntae99/post/0f517bf1-f894-4531-b59a-f239b07a7be2/image.png" type="image/png">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
+      background-image: url('https://velog.velcdn.com/images/hyuntae99/post/5ffe71de-8cc4-4864-b942-fac84c544b42/image.png');
+      background-size: contain; /* 이미지가 화면에 맞게 채워지도록 설정 */
+      background-position: center center; /* 이미지의 중심을 화면에 맞춤 */
+      background-repeat: no-repeat; /* 이미지 반복을 방지 */
+      background-attachment: fixed; /* 배경 이미지 고정 */
+      position: relative;
+      overflow: hidden;
+    }
+    .bottom-right-logo {
+      position: fixed;
+      right: -20px;
+      bottom: 10px;
+      width: 200px;
+      height: 200px;
+    }
+    .container {
+      width: 100%;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .message-container {
+      height: 500px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      padding: 10px;
+      overflow-y: auto;
+      background-color: white;
+    }
+    .message {
+      margin-bottom: 10px;
+      max-width: 70%;
+      padding: 10px;
+      border-radius: 10px;
+      clear: both;
+    }
+    .message.user {
+      float: right;
+      background-color: #4CAF50;
+      color: white;
+      border-radius: 10px 10px 0 10px;
+    }
+    .message.gpt {
+      float: left;
+      background-color: #ddd;
+      color: black;
+      border-radius: 10px 10px 10px 0;
+    }
+    .input-container {
+      display: flex;
+      margin-top: 20px;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      font-size: 16px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      margin-left: 10px;
+      cursor: pointer;
+    }
+
+    /* Popup Style */
+    .popup {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .popup-content {
+      background-color: white;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    /* 파스텔 톤 버튼 색상 */
+    .topic-button {
+      padding: 10px 20px;
+      margin: 10px;
+      font-size: 16px;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+    .topic-button:nth-child(1) {
+      background-color: #FF6F91;
+    }
+    .topic-button:nth-child(1):hover {
+      background-color: #FF4567;
+    }
+    .topic-button:nth-child(2) {
+      background-color: #FF9966;
+    }
+    .topic-button:nth-child(2):hover {
+      background-color: #FF7733;
+    }
+    .topic-button:nth-child(3) {
+      background-color: #4D94FF;
+    }
+    .topic-button:nth-child(3):hover {
+      background-color: #266AFF;
+    }
+    .topic-button:nth-child(4) {
+      background-color: #33CC99;
+    }
+    .topic-button:nth-child(4):hover {
+      background-color: #00B374;
+    }
+    .topic-button:nth-child(5) {
+      background-color: #FFB84D;
+    }
+    .topic-button:nth-child(5):hover {
+      background-color: #FF9933;
+    }
+
+    /* 물방울 애니메이션 */
+    .drop {
+      position: absolute;
+      border-radius: 50%;
+      background: lightpink;
+      transform: scale(0);
+      animation: drop 0.6s linear;
+      pointer-events: none;
+    }
+
+    @keyframes drop {
+      to {
+        transform: scale(1);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+<img src="https://velog.velcdn.com/images/hyuntae99/post/0f517bf1-f894-4531-b59a-f239b07a7be2/image.png" alt="Logo" class="bottom-right-logo">
+<div class="container">
+  <h2>Chat with Your Friendly Korean Tutor</h2>
+  <div class="message-container" id="messageContainer">
+    <!-- Messages will be added here -->
+  </div>
+  <div class="input-container">
+    <input type="text" id="userInput" placeholder="Type your message..." disabled>
+    <button id="submitButton" onclick="sendMessage()" disabled>Submit</button>
+  </div>
+</div>
+
+<!-- Popup -->
+<div class="popup" id="popup">
+  <div class="popup-content">
+    <h2>Select a topic to start chatting</h2>
+    <button class="topic-button" onclick="setTopic('Free topic')">Free Topic</button>
+    <button class="topic-button" onclick="setTopic('K-Pop')">K-Pop</button>
+    <button class="topic-button" onclick="setTopic('K-Food')">K-Food</button>
+    <button class="topic-button" onclick="setTopic('K-Drama')">K-Drama</button>
+    <button class="topic-button" onclick="setTopic('K-Fashion')">K-Fashion</button>
+  </div>
+</div>
+
+<script>
+  let isWaitingForGPT = false;
+  let sessionId = ""; // Store session ID
+  const apiKey = "[[${apiKey}]]";
+
+  // 주제 선정
+  function setTopic(topic) {
+    fetch('/api/chat', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key' : apiKey
+      },
+      body: JSON.stringify({
+        sessionId: sessionId, // 세션 아이디 설정
+        message: topic
+      }),
+    })
+    .then(response => response.json())
+    .then(data => {
+      sessionId = data.sessionId; // 세션 아이디 저장
+      document.getElementById('popup').style.display = 'none';
+      document.getElementById('userInput').disabled = false;
+      document.getElementById('submitButton').disabled = false;
+
+      addMessage('gpt', data.reply); // 초기 설정 후 대화
+    })
+    .catch(error => console.error('Error:', error));
+  }
+
+  // 메세지 추가 (챗봇)
+  function addMessage(sender, content) {
+    const messageContainer = document.getElementById('messageContainer');
+    const messageDiv = document.createElement('div');
+    messageDiv.classList.add('message', sender);
+
+    // .이 나올 때마다 줄바꿈을 추가하는 로직
+    const formattedContent = formatReply(content);
+
+    messageDiv.innerHTML = `${formattedContent}`;
+    messageContainer.appendChild(messageDiv);
+    messageContainer.scrollTop = messageContainer.scrollHeight;
+  }
+
+  // ()[], "", '' 안에 있는 마침표는 제외하고 줄바꿈을 추가하는 함수
+  function formatReply(reply) {
+    return reply.replace(/(?<![\(\[\{\"\'])\.\s*(?![\)\]\}\\"\'])/g, ".<br>");
+  }
+
+  // 유저 메세지 전송
+  function sendMessage() {
+    if (isWaitingForGPT) return;
+
+    const userInput = document.getElementById('userInput');
+    const userMessage = userInput.value;
+
+    if (userMessage.trim() === "") return;
+
+    addMessage('user', userMessage);
+
+    userInput.value = "";
+    document.getElementById('userInput').disabled = true;
+    document.getElementById('submitButton').disabled = true;
+
+    isWaitingForGPT = true;
+
+    fetch('/api/chat', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key' : apiKey
+      },
+      body: JSON.stringify({
+        message: userMessage
+      }),
+    })
+    .then(response => response.json())
+    .then(data => {
+      addMessage('gpt', data.reply);
+
+      document.getElementById('userInput').disabled = false;
+      document.getElementById('submitButton').disabled = false;
+
+      isWaitingForGPT = false;
+    })
+    .catch(error => console.error('Error:', error));
+  }
+
+  // 물방울 효과를 위한 이벤트 리스너
+  document.body.addEventListener('click', function(e) {
+    const drop = document.createElement('div');
+    drop.className = 'drop';
+    drop.style.width = '60px';
+    drop.style.height = '60px';
+    drop.style.left = `${e.clientX - 30}px`;
+    drop.style.top = `${e.clientY - 30}px`;
+    document.body.appendChild(drop);
+    setTimeout(() => {
+      drop.remove();
+    }, 600);
+  });
+
+  // 팝업 페이지
+  window.onload = function() {
+    document.getElementById('popup').style.display = 'flex';
+  }
+</script>
+</body>
+</html>

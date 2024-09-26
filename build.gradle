@@ -1,0 +1,50 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.3.4'
+	id 'io.spring.dependency-management' version '1.1.6'
+}
+
+group = 'com.hyunn'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	// 기본 구성
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.jetbrains:annotations:24.0.0'
+	compileOnly 'org.projectlombok:lombok'
+	runtimeOnly 'com.mysql:mysql-connector-j'
+	annotationProcessor 'org.projectlombok:lombok'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+	// validation 의존성
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+	// mail 의존성
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+	// timeLeaf 의존성
+	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+
+	implementation 'com.fasterxml.jackson.core:jackson-databind'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}

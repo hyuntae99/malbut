@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Today's Proverb</title>
+  <link rel="icon" href="https://velog.velcdn.com/images/hyuntae99/post/0f517bf1-f894-4531-b59a-f239b07a7be2/image.png" type="image/png">
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 75vh;
+      margin: 0;
+      background-image: url('https://velog.velcdn.com/images/hyuntae99/post/104137b5-35ad-40da-ba2d-cd53447b1588/image.png');
+      background-size: contain; /* 이미지가 화면에 맞게 채워지도록 설정 */
+      background-position: center bottom; /* 이미지의 중심을 화면에 맞춤 */
+      background-repeat: no-repeat; /* 이미지 반복을 방지 */
+      background-attachment: fixed; /* 배경 이미지 고정 */
+      font-family: Arial, sans-serif;
+      overflow: hidden;
+      position: relative;
+    }
+
+    h1 {
+      font-size: 3rem;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      text-align: center;
+      margin-bottom: 2rem;
+      color: grey;
+    }
+
+    .button-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 2rem;
+    }
+
+    .notification-buttons {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      display: flex;
+      flex-direction: row;
+    }
+
+    .input {
+      margin-top: 1rem;
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 1rem;
+    }
+
+    button {
+      margin-top: 1rem;
+      padding: 0.8rem 1.5rem;
+      border: none;
+      border-radius: 5px;
+      background-color: #4CAF50;
+      color: white;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #3e8e41;
+    }
+
+    .notification-buttons button:last-child {
+      background-color: #FF5722;
+    }
+    .notification-buttons button:last-child:hover {
+      background-color: #E64A19;
+    }
+
+    .drop {
+      position: absolute;
+      border-radius: 50%;
+      background: lightpink;
+      transform: scale(0);
+      animation: drop 0.6s linear;
+      pointer-events: none;
+    }
+
+    @keyframes drop {
+      to {
+        transform: scale(1);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+<h1>Today's Proverb</h1>
+<h2>매일 오전 9시에 한국어 속담을 보내드립니다. <br> (We send you Korean proverbs every day at 9:00 AM.)</h2>
+<form id="emailForm">
+  <div class="button-container">
+    <input type="email" class="input" id="emailAuthInput" placeholder="Email" required>
+    <button type="button" class="btn" id="authBtn">Submit</button>
+    <div id="timerContainer" style="display: none;">
+      <span id="timer">3:00</span>
+    </div>
+  </div>
+  <div id="codeContainer" style="display: none;">
+    <input type="text" class="input" id="codeInput" placeholder="Verification number" maxlength="6" required>
+    <button type="button" class="btn" id="verifyBtn" style="margin-left: 5px;">Submit</button>
+  </div>
+</form>
+<div class="notification-buttons">
+  <button onclick="window.location.href='/withdraw'">Termination</button>
+</div>
+
+<!-- 물방울 애니메이션 추가 -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const authBtn = document.getElementById('authBtn');
+    const emailAuthInput = document.getElementById('emailAuthInput');
+    const timerContainer = document.getElementById('timerContainer');
+    const timer = document.getElementById('timer');
+    const codeContainer = document.getElementById('codeContainer');
+    const codeInput = document.getElementById('codeInput');
+    const verifyBtn = document.getElementById('verifyBtn');
+    const apiKey = "[[${apiKey}]]";
+
+    let timerInterval;
+    let isAuthenticated = false;
+
+    authBtn.addEventListener('click', function(event) {
+      event.preventDefault();
+      authBtn.disabled = true; // 인증 버튼 비활성화
+      const email = emailAuthInput.value.trim();
+      const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+
+      if (!emailRegex.test(email)) {
+        alert('Please enter a valid email address. (ex: example@gmail.com)');
+        authBtn.disabled = false; // 이메일이 유효하지 않을 경우 버튼 다시 활성화
+        return;
+      }
+
+      let timeLeft = 300; // 5분
+      const updateTimer = () => {
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        timer.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        timeLeft--;
+
+        if (timeLeft < 0) {
+          clearInterval(timerInterval);
+          alert("Time out. Please enter the verification code again.")
+          authBtn.disabled = false;
+          timerContainer.style.display = 'none';
+          codeContainer.style.display = 'none';
+        }
+      };
+
+      timerInterval = setInterval(updateTimer, 1000);
+      updateTimer();
+
+      fetch(`http://localhost:9000/api/user/code?email=${email}`, {
+        method: 'POST',
+        headers: {
+          'x-api-key' : apiKey
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.code == "00") {
+          alert('The authentication number has been sent.');
+          timerContainer.style.display = 'inline';
+          codeContainer.style.display = 'flex';
+        } else {
+          alert(data.data.msg);
+          authBtn.disabled = false; // 인증번호 발송 실패 시 버튼 다시 활성화
+        }
+      })
+      .catch(error => {
+        console.error(error);
+        authBtn.disabled = false; // 오류 발생 시 버튼 다시 활성화
+      });
+    });
+
+    verifyBtn.addEventListener('click', function(event) {
+      event.preventDefault();
+      verifyBtn.disabled = true; // 인증 버튼 비활성화
+      const email = emailAuthInput.value.trim();
+      const code = codeInput.value.trim();
+
+      fetch(`http://localhost:9000/api/user/authentication?email=${email}&code=${code}`, {
+        method: 'POST',
+        headers: {
+          'x-api-key' : apiKey
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.code == "00") {
+          alert('Authentication completed.');
+          isAuthenticated = true;
+          clearInterval(timerInterval);
+          authBtn.disabled = true;
+          verifyBtn.disabled = true; // 인증 성공 후 인증 버튼 비활성화
+          timerContainer.style.display = 'none';
+          codeContainer.style.display = 'none';
+          registerEmail(email); // 인증 완료 후 이메일 등록 함수 호출
+        } else {
+          alert(data.data.msg);
+          verifyBtn.disabled = false; // 인증 실패 시 버튼 다시 활성화
+        }
+      })
+      .catch(error => {
+        console.error(error);
+        verifyBtn.disabled = false; // 오류 발생 시 버튼 다시 활성화
+      });
+    });
+
+    function registerEmail(email) {
+      fetch(`http://localhost:9000/api/user?email=${email}`, {
+        method: 'POST',
+        headers: {
+          'x-api-key' : apiKey
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.code == "00") {
+          alert('The service has been successfully registered.');
+          window.location.href = 'http://localhost:9000';
+        } else {
+          alert(data.data.data);
+        }
+      })
+      .catch(error => {
+        console.error(error);
+      });
+    }
+
+    // 물방울 효과 이벤트 리스너 추가
+    document.body.addEventListener('click', function(e) {
+      const drop = document.createElement('div');
+      drop.className = 'drop';
+      drop.style.width = '60px';
+      drop.style.height = '60px';
+      drop.style.left = `${e.clientX - 30}px`;
+      drop.style.top = `${e.clientY - 30}px`;
+      document.body.appendChild(drop);
+      setTimeout(() => {
+        drop.remove();
+      }, 600);
+    });
+  });
+</script>
+</body>
+</html>
