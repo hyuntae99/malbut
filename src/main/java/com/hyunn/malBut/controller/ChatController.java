@@ -1,9 +1,8 @@
 package com.hyunn.malBut.controller;
 
-import com.hyunn.malBut.dto.ChatRequest;
+import com.hyunn.malBut.dto.request.ChatRequest;
+import com.hyunn.malBut.dto.response.ChatResponse;
 import com.hyunn.malBut.service.ChatService;
-import java.util.HashMap;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,12 +19,12 @@ public class ChatController {
   private final ChatService chatService;
 
   @PostMapping
-  public ResponseEntity<Map<String, String>> chat(
+  public ResponseEntity<ChatResponse> chat(
       @RequestHeader(value = "x-api-key", required = false) String apiKey,
       @RequestBody ChatRequest chatRequest) {
-    String response = chatService.processChat(chatRequest.getSessionId(), chatRequest.getMessage(), apiKey);
-    Map<String, String> result = new HashMap<>();
-    result.put("reply", response);
-    return ResponseEntity.ok(result);
+    String response = chatService.processChat(chatRequest.getSessionId(), chatRequest.getMessage(),
+        apiKey);
+    ChatResponse chatResponse = ChatResponse.create(chatRequest.getSessionId(), response);
+    return ResponseEntity.ok(chatResponse);
   }
 }

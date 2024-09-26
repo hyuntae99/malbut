@@ -232,8 +232,9 @@
 
   // ()[], "", '' 안에 있는 마침표는 제외하고 줄바꿈을 추가하는 함수
   function formatReply(reply) {
-    return reply.replace(/(?<![\(\[\{\"\'])\.\s*(?![\)\]\}\\"\'])/g, ".<br>");
+    return reply.replace(/(?<![\(\[\{\"\'])\.\s*(?=[^\)\]\}\"])/g, ".<br>").replace(/([\)\]])\.\s*/g, "$1.<br>");
   }
+
 
   // 유저 메세지 전송
   function sendMessage() {

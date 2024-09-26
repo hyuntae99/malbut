@@ -1,7 +1,8 @@
 package com.hyunn.malBut.controller;
 
-import com.hyunn.malBut.dto.quiz.Answer;
-import com.hyunn.malBut.dto.quiz.Question;
+import com.hyunn.malBut.dto.request.GradeRequest;
+import com.hyunn.malBut.dto.response.GradeResponse;
+import com.hyunn.malBut.dto.response.QuizResponse;
 import com.hyunn.malBut.service.QuizService;
 import java.util.List;
 import java.util.Map;
@@ -22,19 +23,19 @@ public class QuizController {
   private final QuizService quizService;
 
   @GetMapping("/start")
-  public List<Question> startQuiz(
+  public List<QuizResponse> startQuiz(
       @RequestHeader(value = "x-api-key", required = false) String apiKey,
       @RequestParam("level") String level) {
     return quizService.startQuiz(level, apiKey);
   }
 
   @PostMapping("/grade")
-  public Map<String, Object> gradeQuiz(
+  public GradeResponse gradeQuiz(
       @RequestHeader(value = "x-api-key", required = false) String apiKey,
-      @RequestBody List<Answer> answers) {
+      @RequestBody List<GradeRequest> answers) {
     int score = quizService.gradeQuiz(answers, apiKey);
     String grade = quizService.calculateGrade(score, apiKey);
 
-    return Map.of("score", score, "grade", grade);
+    return GradeResponse.create(score, grade);
   }
 }
