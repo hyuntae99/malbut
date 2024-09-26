@@ -120,6 +120,7 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
+      font-weight: bold;
       gap: 20px;
       width: 100%;
     }
@@ -160,6 +161,8 @@
       cursor: pointer;
       margin-top: 40px;
       display: none;
+      margin-left: auto;
+      margin-right: auto;
     }
 
     .popup {
@@ -202,8 +205,37 @@
     }
 
     .popup .score-grade {
-      margin-top: 40px;
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
+
+    .score-bar {
+      width: 80%;
+      height: 20px;
+      background-color: #f1f1f1;
+      border-radius: 10px;
+      margin-top: 10px;
+      position: relative;
+    }
+
+    .score-bar-fill {
+      height: 100%;
+      background-color: #4CAF50;
+      border-radius: 10px;
+      transition: width 0.5s ease;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    #grade {
+      margin-top: 10px;
+      font-size: 1.5rem;
+      color: #333;
+    }
+
 
     .popup .close-button {
       padding: 15px;
@@ -250,11 +282,14 @@
   <div id="choices" class="choices"></div>
   <button id="submit" class="submit-button" onclick="submitQuiz()">Result</button>
 </div>
-
 <div class="popup" id="popup">
   <div id="results" class="results"></div>
   <div class="score-grade">
     <div id="score" style="font-size: 2rem; color: #4CAF50;"></div>
+    <div class="score-bar">
+      <div class="score-bar-fill"></div>
+    </div>
+    <div id="grade"></div>
     <button class="close-button" onclick="closePopup()">Close</button>
   </div>
 </div>
@@ -357,8 +392,17 @@
     // 점수와 등급 표시
     document.getElementById('score').innerText = `Your score: ${score}`;
 
-    document.getElementById('popup').style.display = 'block'; // 팝업 표시
+    // 점수에 따른 막대 채우기
+    const scoreBarFill = document.querySelector('.score-bar-fill');
+    scoreBarFill.style.width = `${score}%`; // 점수만큼 채우기 (0-100)
+
+    // 등급 표시
+    document.getElementById('grade').innerText = `Your grade: ${grade}`;
+
+    // 팝업 표시
+    document.getElementById('popup').style.display = 'block';
   }
+
 
   function closePopup() {
     window.location.href = 'http://localhost:9000'; // 메인 페이지로 이동
