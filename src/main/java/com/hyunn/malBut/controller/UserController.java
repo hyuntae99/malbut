@@ -1,6 +1,6 @@
 package com.hyunn.malBut.controller;
 
-import com.hyunn.malBut.dto.ApiStandardResponse;
+import com.hyunn.malBut.dto.response.ApiStandardResponse;
 import com.hyunn.malBut.service.UserService;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;

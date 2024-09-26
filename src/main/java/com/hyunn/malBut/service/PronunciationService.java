@@ -2,13 +2,15 @@ package com.hyunn.malBut.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hyunn.malBut.dto.response.PronunciationResponse;
+import com.hyunn.malBut.dto.response.ScriptResponse;
 import com.hyunn.malBut.entity.Pronunciation;
 import com.hyunn.malBut.exception.ApiKeyNotValidException;
 import com.hyunn.malBut.repository.PronunciationJpaRepository;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.Random;
 import lombok.RequiredArgsConstructor;
@@ -49,12 +51,11 @@ public class PronunciationService {
   private final RestTemplate restTemplate;
   private final PronunciationJpaRepository pronunciationRepository;
 
-
   /**
    * 난이도에 맞는 무작위 대본을 반환
    */
   @Transactional
-  public Map<String, String> getRandomScript(String level) {
+  public ScriptResponse getRandomScript(String level) {
     List<Pronunciation> scripts = pronunciationRepository.findByLevel(level);
 
     if (scripts.isEmpty()) {
@@ -65,18 +66,14 @@ public class PronunciationService {
     Pronunciation selectedScript = scripts.get(random.nextInt(scripts.size()));
 
     // 대본과 함께 MP3 링크도 반환
-    Map<String, String> result = new HashMap<>();
-    result.put("script", selectedScript.getKorean());
-    result.put("mp3Url", selectedScript.getLink());
-    return result;
+    return ScriptResponse.create(selectedScript.getKorean(), selectedScript.getLink());
   }
-
 
   /**
    * 발음 평가 함수
    */
   @Transactional
-  public Map<String, Object> evaluatePronunciation(MultipartFile audioFile, String script,
+  public PronunciationResponse evaluatePronunciation(MultipartFile audioFile, String script,
       String apiKey) throws Exception {
     // API KEY 유효성 검사
     if (apiKey == null || !apiKey.equals(xApiKey)) {
@@ -97,16 +94,10 @@ public class PronunciationService {
     String score = content.substring(content.indexOf("Score: ") + 7, content.indexOf("\n")).trim();
     String improvements = content.substring(content.indexOf("Improvement: ") + 13).trim();
 
-    // 결과 반환
-    Map<String, Object> result = new HashMap<>();
+    // 점수를 정수로 변환하고 DTO로 반환
     int rank = extractScore(score);
-    result.put("score", rank); // 문자열을 정수로 변환
-    if (rank >= 90) {
-      improvements = "Excellent! Your pronunciation is very good!";
-    }
-    result.put("improvements", improvements); // 개선점 문자열 그대로 반환
-    return result;
 
+    return PronunciationResponse.create(rank, improvements);
   }
 
   /**
@@ -155,7 +146,8 @@ public class PronunciationService {
             recognizedText
             + "\". Compare the two and provide feedback, rate the pronunciation out of 100, and suggest improvements. \n"
             + "Please provide it in the form of \"Score:\" \"Improvement:\"\n"
-            + "Improvements should be expressed in one sentence to sum up the most important part, Please give it a very very generous score since it was pronounced by a foreigner.");
+            + "Improvements should be expressed in one sentence to sum up the most important part, Please give it a very very generous score since it was pronounced by a foreigner."
+            + "If the evaluation score is 90 or higher, please give praise instead of suggestions for improvement.");
     messages.add(userPrompt);
 
     requestBody.put("messages", messages);

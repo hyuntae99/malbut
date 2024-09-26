@@ -1,7 +1,7 @@
 package com.hyunn.malBut.service;
 
-import com.hyunn.malBut.dto.quiz.Answer;
-import com.hyunn.malBut.dto.quiz.Question;
+import com.hyunn.malBut.dto.request.GradeRequest;
+import com.hyunn.malBut.dto.response.QuizResponse;
 import com.hyunn.malBut.entity.Word;
 import com.hyunn.malBut.exception.ApiKeyNotValidException;
 import com.hyunn.malBut.repository.WordJpaRepository;
@@ -28,13 +28,13 @@ public class QuizService {
    * 20개의 문제를 난이도에 맞게 생성
    */
   @Transactional
-  public List<Question> startQuiz(String level, String apiKey) {
+  public List<QuizResponse> startQuiz(String level, String apiKey) {
     // API KEY 유효성 검사
     if (apiKey == null || !apiKey.equals(xApiKey)) {
       throw new ApiKeyNotValidException("API KEY가 올바르지 않습니다.");
     }
 
-    List<Question> quiz = new ArrayList<>();
+    List<QuizResponse> quiz = new ArrayList<>();
 
     // 난이도에 따른 문제 비율 설정
     int easyCount = 0;
@@ -76,7 +76,7 @@ public class QuizService {
   /**
    * 선지 생성 함수
    */
-  private Question generateQuestion(Word correctWord, List<Word> wordList) {
+  private QuizResponse generateQuestion(Word correctWord, List<Word> wordList) {
     Random random = new Random();
     List<String> choices = new ArrayList<>();
     choices.add(correctWord.getEnglish());
@@ -90,14 +90,14 @@ public class QuizService {
 
     Collections.shuffle(choices);
 
-    return new Question(correctWord.getKorean(), choices, correctWord.getEnglish());
+    return QuizResponse.create(correctWord.getKorean(), choices, correctWord.getEnglish());
   }
 
 
   /**
    * 채점 및 평가
    */
-  public int gradeQuiz(List<Answer> answers, String apiKey) {
+  public int gradeQuiz(List<GradeRequest> answers, String apiKey) {
     // API KEY 유효성 검사
     if (apiKey == null || !apiKey.equals(xApiKey)) {
       throw new ApiKeyNotValidException("API KEY가 올바르지 않습니다.");
@@ -105,7 +105,7 @@ public class QuizService {
 
     int score = 0;
 
-    for (Answer answer : answers) {
+    for (GradeRequest answer : answers) {
       if (answer.getUserAnswer().equals(answer.getCorrectAnswer())) {
         score += 5;
       }
