@@ -42,7 +42,8 @@ public class MailService {
     simpleMailMessage.setSubject(title);
 
     // 내용
-    String message = "인증번호는 " + code + "입니다.\n5분 이내에 입력해주시기 바랍니다."; // 링크 수정
+    String message = "인증번호는 " + code + "입니다.\n5분 이내에 입력해주시기 바랍니다.\n\n"
+        + "The verification number is " + code + ".\nPlease enter it within 5 minutes.";
     simpleMailMessage.setText(message);
 
     try {
