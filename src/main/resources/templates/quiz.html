@@ -311,7 +311,7 @@
 
   // 퀴즈 로드
   function loadQuiz() {
-    fetch(`http://localhost:9000/api/quiz/start?level=${selectedLevel}`, {
+    fetch(`http://localhost:9000/api/quiz/start-word?level=${selectedLevel}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -357,7 +357,7 @@
   }
 
   function submitQuiz() {
-    fetch('http://localhost:9000/api/quiz/grade', {
+    fetch('http://localhost:9000/api/quiz/grade-word', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

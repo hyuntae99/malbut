@@ -86,6 +86,13 @@
     .buttons button:nth-child(4):hover {
       background-color: #00B374;
     }
+    .buttons button:nth-child(5) {
+      background-color: #F0C27B;
+      color: #333;
+    }
+    .buttons button:nth-child(5):hover {
+      background-color: #E8B066;
+    }
     .drop {
       position: absolute;
       border-radius: 50%;
@@ -108,8 +115,9 @@
 <div class="buttons">
   <button onclick="location.href='http://localhost:9000/chat'">Chatting</button>
   <button onclick="location.href='http://localhost:9000/pronunciation'">Pronunciation Test</button>
-  <button onclick="location.href='http://localhost:9000/quiz'">Korean Quiz</button>
-  <button onclick="location.href='http://localhost:9000/subscribe'">Today's Proverb</button>
+  <button onclick="location.href='http://localhost:9000/quiz'">Word Quiz</button>
+  <button onclick="location.href='http://localhost:9000/proverb'">Proverb Quiz</button>
+  <button onclick="location.href='http://localhost:9000/subscribe'">Subscribe</button>
 </div>
 <script>
   document.body.addEventListener('click', function(e) {
