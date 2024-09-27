@@ -1,8 +1,11 @@
 package com.hyunn.malBut.controller;
 
-import com.hyunn.malBut.dto.request.GradeRequest;
-import com.hyunn.malBut.dto.response.GradeResponse;
-import com.hyunn.malBut.dto.response.QuizResponse;
+import com.hyunn.malBut.dto.request.EvaluateProverbRequest;
+import com.hyunn.malBut.dto.request.GradeWordRequest;
+import com.hyunn.malBut.dto.response.EvaluateProverbResponse;
+import com.hyunn.malBut.dto.response.GradeWordResponse;
+import com.hyunn.malBut.dto.response.QuizProverbResponse;
+import com.hyunn.malBut.dto.response.QuizWordResponse;
 import com.hyunn.malBut.service.QuizService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -21,20 +24,35 @@ public class QuizController {
 
   private final QuizService quizService;
 
-  @GetMapping("/start")
-  public List<QuizResponse> startQuiz(
+  @GetMapping("/start-word")
+  public List<QuizWordResponse> startWordQuiz(
       @RequestHeader(value = "x-api-key", required = false) String apiKey,
       @RequestParam("level") String level) {
-    return quizService.startQuiz(level, apiKey);
+    return quizService.startWordQuiz(level, apiKey);
   }
 
-  @PostMapping("/grade")
-  public GradeResponse gradeQuiz(
+  @PostMapping("/grade-word")
+  public GradeWordResponse gradeWordQuiz(
       @RequestHeader(value = "x-api-key", required = false) String apiKey,
-      @RequestBody List<GradeRequest> answers) {
-    int score = quizService.gradeQuiz(answers, apiKey);
-    String grade = quizService.calculateGrade(score, apiKey);
+      @RequestBody List<GradeWordRequest> answers) {
+    int score = quizService.gradeWordQuiz(answers, apiKey);
+    String grade = quizService.calculateWordGrade(score, apiKey);
 
-    return GradeResponse.create(score, grade);
+    return GradeWordResponse.create(score, grade);
+  }
+
+  @GetMapping("/start-proverb")
+  public List<QuizProverbResponse> startProverbQuiz(
+      @RequestHeader(value = "x-api-key", required = false) String apiKey,
+      @RequestParam("level") String level) {
+    return quizService.startProverbQuiz(level, apiKey);
+  }
+
+  @PostMapping("/evaluate-proverb")
+  public List<EvaluateProverbResponse> evaluateProverbQuiz(
+      @RequestHeader(value = "x-api-key", required = false) String apiKey,
+      @RequestBody List<EvaluateProverbRequest> answers) {
+    return quizService.gradeProverbQuiz(answers, apiKey);
   }
 }
+
