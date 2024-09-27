@@ -35,6 +35,12 @@ public class MainController {
     return "quiz";
   }
 
+  @GetMapping("/proverb")
+  public String proverbPage(Model model) {
+    model.addAttribute("apiKey", xApiKey);
+    return "proverb";
+  }
+
   @GetMapping("/subscribe")
   public String subscribe(Model model) {
     model.addAttribute("apiKey", xApiKey);

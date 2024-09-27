@@ -4,21 +4,22 @@ import java.util.List;
 import lombok.Getter;
 
 @Getter
-public class QuizResponse {
+public class QuizWordResponse {
+
   private String korean;
 
   private List<String> choices;
 
   private String correctAnswer;
 
-  public QuizResponse(String korean, List<String> choices, String correctAnswer) {
+  public QuizWordResponse(String korean, List<String> choices, String correctAnswer) {
     this.korean = korean;
     this.choices = choices;
     this.correctAnswer = correctAnswer;
   }
 
-  public static QuizResponse create(String korean, List<String> choices, String correctAnswer) {
-    return new QuizResponse(korean, choices, correctAnswer);
+  public static QuizWordResponse create(String korean, List<String> choices, String correctAnswer) {
+    return new QuizWordResponse(korean, choices, correctAnswer);
   }
 
 }

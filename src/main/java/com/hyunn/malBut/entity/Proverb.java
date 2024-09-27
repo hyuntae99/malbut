@@ -30,6 +30,10 @@ public class Proverb {
   @Column(name = "korean")
   private String korean;
 
+  // 질문
+  @Column(name = "question")
+  private String question;
+
 }
 
 
