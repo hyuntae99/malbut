@@ -5,7 +5,6 @@ import com.hyunn.malBut.dto.response.GradeResponse;
 import com.hyunn.malBut.dto.response.QuizResponse;
 import com.hyunn.malBut.service.QuizService;
 import java.util.List;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
