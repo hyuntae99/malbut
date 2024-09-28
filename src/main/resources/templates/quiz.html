@@ -6,6 +6,7 @@
   <title>Korean Vocabulary Quiz</title>
   <link rel="icon" href="https://velog.velcdn.com/images/hyuntae99/post/0f517bf1-f894-4531-b59a-f239b07a7be2/image.png" type="image/png">
   <style>
+    /* 스타일 수정 및 리팩토링 */
     body {
       font-family: Arial, sans-serif;
       display: flex;
@@ -15,10 +16,10 @@
       height: 100vh;
       margin: 0;
       background-image: url('https://velog.velcdn.com/images/hyuntae99/post/5ffe71de-8cc4-4864-b942-fac84c544b42/image.png');
-      background-size: contain; /* 이미지가 화면에 맞게 채워지도록 설정 */
-      background-position: center center; /* 이미지의 중심을 화면에 맞춤 */
-      background-repeat: no-repeat; /* 이미지 반복을 방지 */
-      background-attachment: fixed; /* 배경 이미지 고정 */
+      background-size: contain;
+      background-position: center center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
       position: relative;
       overflow: hidden;
     }
@@ -39,65 +40,64 @@
       width: 100%;
       box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
       text-align: center;
-      display: none; /* 초기에는 보이지 않도록 */
+      display: none;
     }
 
     .level-selection {
       background-color: white;
-      padding: 20px; /* 패딩 크기 줄이기 */
-      border-radius: 10px; /* 둥근 모서리 크기 조정 */
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* 그림자 크기 조정 */
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
       text-align: center;
       display: flex;
-      justify-content: center; /* 가운데 정렬 */
+      justify-content: center;
       width: 100%;
-      max-width: 600px; /* 박스 크기 줄이기 */
-      flex-direction: column; /* 수직 배치 */
+      max-width: 600px;
+      flex-direction: column;
       margin-bottom: 20px;
     }
 
     .level-selection h2 {
-      margin-bottom: 15px; /* 제목과 버튼 사이 간격 */
+      margin-bottom: 15px;
     }
 
     .level-selection button {
-      padding: 15px; /* 버튼 패딩 크기 줄이기 */
+      padding: 15px;
       margin: 8px;
-      font-size: 1.3rem; /* 버튼 글씨 크기 약간 줄이기 */
+      font-size: 1.3rem;
       color: white;
       border: none;
       border-radius: 8px;
       cursor: pointer;
-      transition: background-color 0.3s ease, transform 0.2s ease; /* 호버 효과에 부드러운 애니메이션 추가 */
+      transition: background-color 0.3s ease, transform 0.2s ease;
     }
 
     /* 난이도 선택 버튼 색상 */
     .level-selection button:nth-child(1) {
-      background-color: #FF6F91; /* Beginner */
+      background-color: #FF6F91;
     }
 
     .level-selection button:nth-child(1):hover {
-      background-color: #FF4567; /* 호버 시 더 짙은 색상 */
-      transform: scale(1.05); /* 호버 시 살짝 커지게 */
+      background-color: #FF4567;
+      transform: scale(1.05);
     }
 
     .level-selection button:nth-child(2) {
-      background-color: #4D94FF; /* Intermediate */
+      background-color: #4D94FF;
     }
 
     .level-selection button:nth-child(2):hover {
-      background-color: #266AFF; /* 호버 시 더 짙은 색상 */
-      transform: scale(1.05); /* 호버 시 살짝 커지게 */
+      background-color: #266AFF;
+      transform: scale(1.05);
     }
 
-    /* Advanced 버튼 배경색을 더 진하게 변경 */
     .level-selection button:nth-child(3) {
-      background-color: #003d3d; /* 진한 초록색 */
+      background-color: #003d3d;
     }
 
     .level-selection button:nth-child(3):hover {
-      background-color: #002828; /* 호버 시 더 짙은 색상 */
-      transform: scale(1.05); /* 호버 시 살짝 커지게 */
+      background-color: #002828;
+      transform: scale(1.05);
     }
 
     .question-number {
@@ -176,26 +176,43 @@
       border-radius: 20px;
       box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
       text-align: center;
+      width: 90%; /* 가로 폭을 90%로 설정 */
+      max-width: 1200px; /* 최대 너비를 1200px로 설정 */
       max-height: 80vh;
       overflow-y: auto;
     }
 
+    /* 결과 헤더와 항목 스타일 */
+    .popup .result-header,
     .popup .result-item {
       display: flex;
-      justify-content: space-between;
       margin-bottom: 15px;
       font-size: 1.2rem;
     }
 
-    .popup .result-item span {
+    .popup .result-header {
+      font-weight: bold;
+      border-bottom: 1px solid #ccc;
+      padding-bottom: 10px;
+    }
+
+    .popup .result-column {
       flex: 1;
-      text-align: left;
+      text-align: center;
+      padding: 0 10px; /* 좌우 여백 추가 */
+      word-break: break-all; /* 긴 단어가 있을 때 줄바꿈 허용 */
     }
 
-    .popup .result-item span:last-child {
-      text-align: right;
+    /* 정답과 사용자 답변 스타일 */
+    .popup .correct-answer {
+      font-weight: bold;
     }
 
+    .popup .user-answer {
+      font-weight: bold;
+    }
+
+    /* 정답 여부에 따른 색상 */
     .popup .correct {
       color: green;
     }
@@ -235,7 +252,6 @@
       font-size: 1.5rem;
       color: #333;
     }
-
 
     .popup .close-button {
       padding: 15px;
@@ -293,7 +309,6 @@
     <button class="close-button" onclick="closePopup()">Close</button>
   </div>
 </div>
-
 <script>
   let questions = [];
   let currentQuestion = 0;
@@ -332,7 +347,7 @@
 
     const choicesContainer = document.getElementById('choices');
     choicesContainer.innerHTML = '';
-    question.choices.forEach(choice => {
+    question.choices.forEach((choice, index) => {
       const button = document.createElement('button');
       button.innerText = choice;
       button.onclick = () => checkAnswer(choice, question.correctAnswer);
@@ -375,17 +390,53 @@
     const resultsContainer = document.getElementById('results');
     resultsContainer.innerHTML = '';
 
+    // 헤더 추가
+    const headerRow = document.createElement('div');
+    headerRow.className = 'result-header';
+    headerRow.innerHTML = `
+        <div class="result-column">Question</div>
+        <div class="result-column">Answer</div>
+        <div class="result-column">You</div>
+      `;
+    resultsContainer.appendChild(headerRow);
+
+    // 각 결과 항목 표시
     answers.forEach((answer, index) => {
       const resultItem = document.createElement('div');
       resultItem.className = 'result-item';
-      resultItem.innerHTML = `
-                <span>Q${index + 1}: ${questions[index].korean}</span>
-        <span>Your answer: ${answer.userAnswer}</span>
-        <span>Correct answer: ${answer.correctAnswer}</span>
-        <span class="${answer.isCorrect ? 'correct' : 'incorrect'}">
-          ${answer.isCorrect ? 'O' : 'X'}
-        </span>
-      `;
+
+      const questionText = `${questions[index].korean}`;
+      const correctAnswerText = answer.correctAnswer;
+      const userAnswerText = answer.userAnswer;
+
+      // 질문 열
+      const questionColumn = document.createElement('div');
+      questionColumn.className = 'result-column correct-answer';
+      questionColumn.innerText = questionText;
+
+      // 정답 열
+      const correctAnswerColumn = document.createElement('div');
+      correctAnswerColumn.className = 'result-column correct-answer';
+      correctAnswerColumn.innerText = correctAnswerText;
+
+      // 사용자 답변 열
+      const userAnswerColumn = document.createElement('div');
+      userAnswerColumn.className = 'result-column user-answer';
+      userAnswerColumn.innerText = userAnswerText;
+
+      // 정답 여부에 따른 색상 적용
+      if (answer.isCorrect) {
+        userAnswerColumn.classList.add('correct');
+      } else {
+        userAnswerColumn.classList.add('incorrect');
+      }
+
+      // 각 열을 결과 항목에 추가
+      resultItem.appendChild(questionColumn);
+      resultItem.appendChild(correctAnswerColumn);
+      resultItem.appendChild(userAnswerColumn);
+
+      // 결과 항목을 결과 컨테이너에 추가
       resultsContainer.appendChild(resultItem);
     });
 
@@ -396,13 +447,9 @@
     const scoreBarFill = document.querySelector('.score-bar-fill');
     scoreBarFill.style.width = `${score}%`; // 점수만큼 채우기 (0-100)
 
-    // 등급 표시
-    document.getElementById('grade').innerText = `Your grade: ${grade}`;
-
     // 팝업 표시
     document.getElementById('popup').style.display = 'block';
   }
-
 
   function closePopup() {
     window.location.href = 'http://localhost:9000'; // 메인 페이지로 이동
@@ -424,4 +471,3 @@
 </script>
 </body>
 </html>
-
