@@ -135,28 +135,6 @@ public class QuizService {
   }
 
   /**
-   * 점수에 대한 등급표
-   */
-  public String calculateWordGrade(int score, String apiKey) {
-    // API KEY 유효성 검사
-    if (apiKey == null || !apiKey.equals(xApiKey)) {
-      throw new ApiKeyNotValidException("API KEY가 올바르지 않습니다.");
-    }
-
-    if (score >= 80) {
-      return "A";
-    } else if (score >= 60) {
-      return "B";
-    } else if (score >= 40) {
-      return "C";
-    } else if (score >= 20) {
-      return "D";
-    } else {
-      return "F";
-    }
-  }
-
-  /**
    * 10개의 문제를 난이도에 맞게 속담/숙어 퀴즈를 생성
    */
   @Transactional
@@ -191,7 +169,7 @@ public class QuizService {
 
     // 쉬운 문제와 어려운 문제를 랜덤으로 필요한 수만큼 가져오기
     List<Proverb> easyProverbs = proverbJpaRepository.findRandomEasyProverbs(easyCount);
-    List<Proverb> hardProverbs = proverbJpaRepository.findRandomEasyProverbs(hardCount);
+    List<Proverb> hardProverbs = proverbJpaRepository.findRandomHardProverbs(hardCount);
 
     // 쉬운 문제 추가
     for (Proverb easyProverb : easyProverbs) {
@@ -218,7 +196,7 @@ public class QuizService {
 
     // API KEY 유효성 검사
     if (apiKey == null || !apiKey.equals(xApiKey)) {
-      throw new ApiKeyNotValidException("Invalid API KEY.");
+      throw new ApiKeyNotValidException("API KEY가 올바르지 않습니다.");
     }
 
     try {
@@ -226,7 +204,7 @@ public class QuizService {
       List<Map<String, String>> requestData = new ArrayList<>();
       for (EvaluateProverbRequest answer : answers) {
         if (answer.getQuestion() == null || answer.getCorrectAnswer() == null || answer.getUserAnswer() == null) {
-          throw new IllegalArgumentException("Question, correctAnswer, and userAnswer must not be null.");
+          throw new ApiNotFoundException("Question, correctAnswer, and userAnswer must not be null.");
         }
 
         // 유저 응답 문장 생성
@@ -253,7 +231,7 @@ public class QuizService {
       PythonEvaluationResponse[] responseArray = responseEntity.getBody();
 
       if (responseArray == null) {
-        throw new RuntimeException("No response from Python server.");
+        throw new ApiNotFoundException("No response from Python server.");
       }
 
       List<PythonEvaluationResponse> pythonResponses = Arrays.asList(responseArray);
@@ -267,14 +245,7 @@ public class QuizService {
 
         int score = (int) Math.round(pythonResponse.getFinal_score());
 
-        String evaluate;
-        if (score == 100) {
-          evaluate = "Perfect!";
-        } else if (score >= 80) {
-          evaluate = "Very Good!";
-        } else {
-          evaluate = "Wrong Answer";
-        }
+        String evaluate = evaluateProverb(score, apiKey);
 
         EvaluateProverbResponse response = EvaluateProverbResponse.create(
             pythonResponse.getSentence1(), // 정답 문장
@@ -289,6 +260,48 @@ public class QuizService {
 
     } catch (Exception e) {
       throw new ApiNotFoundException("Error calling Flask API: " + e.getMessage());
+    }
+  }
+
+  /**
+   * 점수에 대한 등급표
+   */
+  public String calculateWordGrade(int score, String apiKey) {
+    // API KEY 유효성 검사
+    if (apiKey == null || !apiKey.equals(xApiKey)) {
+      throw new ApiKeyNotValidException("API KEY가 올바르지 않습니다.");
+    }
+
+    if (score >= 80) {
+      return "A";
+    } else if (score >= 60) {
+      return "B";
+    } else if (score >= 40) {
+      return "C";
+    } else if (score >= 20) {
+      return "D";
+    } else {
+      return "F";
+    }
+  }
+
+  /**
+   * 점수에 대한 평가표
+   */
+  public String evaluateProverb(int score, String apiKey) {
+    // API KEY 유효성 검사
+    if (apiKey == null || !apiKey.equals(xApiKey)) {
+      throw new ApiKeyNotValidException("API KEY가 올바르지 않습니다.");
+    }
+
+    if (score == 100) {
+      return "Perfect!";
+    } else if (score >= 80) {
+      return "Good Job!";
+    } else if (score >= 60) {
+      return "Not Accurate";
+    } else {
+      return "That's Wrong";
     }
   }
 }

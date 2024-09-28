@@ -44,6 +44,10 @@ dependencies {
 
 	// 데이터 직렬화 의존성
 	implementation 'com.fasterxml.jackson.core:jackson-databind'
+
+	// Springdoc OpenAPI UI
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
+
 }
 
 tasks.named('test') {
