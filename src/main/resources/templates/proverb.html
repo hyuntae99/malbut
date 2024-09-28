@@ -1,10 +1,378 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- 메타데이터 및 스타일 -->
   <meta charset="UTF-8">
-  <title>Title</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Korean Proverb Quiz</title>
+  <link rel="icon" href="https://velog.velcdn.com/images/hyuntae99/post/0f517bf1-f894-4531-b59a-f239b07a7be2/image.png" type="image/png">
+  <style>
+    /* 스타일 섹션 */
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-image: url('https://velog.velcdn.com/images/hyuntae99/post/5ffe71de-8cc4-4864-b942-fac84c544b42/image.png');
+      background-size: contain;
+      background-position: center center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .bottom-right-logo {
+      position: fixed;
+      right: -20px;
+      bottom: 10px;
+      width: 200px;
+      height: 200px;
+    }
+
+    .level-selection, .quiz-container, .popup {
+      background-color: white;
+      border-radius: 20px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+      text-align: center;
+    }
+
+    .level-selection {
+      padding: 20px;
+      max-width: 600px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .level-selection h2 {
+      margin-bottom: 15px;
+    }
+
+    .level-selection button {
+      padding: 15px;
+      margin: 8px;
+      font-size: 1.3rem;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+    /* 난이도 버튼 색상 */
+    .level-selection button:nth-child(1) {
+      background-color: #FF6F91;
+    }
+
+    .level-selection button:nth-child(1):hover {
+      background-color: #FF4567;
+      transform: scale(1.05);
+    }
+
+    .level-selection button:nth-child(2) {
+      background-color: #4D94FF;
+    }
+
+    .level-selection button:nth-child(2):hover {
+      background-color: #266AFF;
+      transform: scale(1.05);
+    }
+
+    .level-selection button:nth-child(3) {
+      background-color: #003d3d;
+    }
+
+    .level-selection button:nth-child(3):hover {
+      background-color: #002828;
+      transform: scale(1.05);
+    }
+
+    .quiz-container {
+      padding: 30px;
+      max-width: 800px;
+      width: 100%;
+      display: none;
+      position: relative;
+    }
+
+    .question-number {
+      position: absolute;
+      top: 10px;
+      right: 20px;
+      font-size: 1.5rem;
+      color: #555;
+    }
+
+    .question-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .question {
+      font-size: 2rem;
+      margin-bottom: 20px;
+      color: #333;
+      font-weight: bold;
+    }
+
+    .english-translation {
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+      color: #777;
+    }
+
+    .answer-input {
+      width: 80%;
+      padding: 15px;
+      font-size: 1.5rem;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .next-button, .submit-button {
+      padding: 15px;
+      background-color: #4CAF50;
+      color: white;
+      font-size: 1.5rem;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+
+    .popup {
+      display: none;
+      padding: 40px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .result-item {
+      margin-bottom: 15px;
+      font-size: 1.2rem;
+      text-align: left;
+    }
+
+    .close-button {
+      padding: 15px;
+      background-color: #f44336;
+      color: white;
+      font-size: 1.5rem;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+
+    /* 점수 및 평가 색상 스타일 */
+    .score-good {
+      color: green;
+      font-weight: bold;
+    }
+
+    .score-bad {
+      color: red;
+      font-weight: bold;
+    }
+
+    /* 정답과 사용자 답변 스타일 */
+    .correct-answer {
+      font-weight: bold;
+    }
+
+    .user-answer {
+      opacity: 0.8;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
+<img src="https://velog.velcdn.com/images/hyuntae99/post/0f517bf1-f894-4531-b59a-f239b07a7be2/image.png" alt="Logo" class="bottom-right-logo">
+<div class="level-selection">
+  <h2>Select Difficulty</h2>
+  <div class="button-container">
+    <button onclick="selectLevel('beginner')">Beginner</button>
+    <button onclick="selectLevel('intermediate')">Intermediate</button>
+    <button onclick="selectLevel('advanced')">Advanced</button>
+  </div>
+</div>
+<div class="quiz-container" id="quiz-container">
+  <div class="question-number" id="question-number">1/10</div>
+  <div class="question-block">
+    <div id="question" class="question"></div>
+    <div id="english-translation" class="english-translation"></div>
+    <input type="text" id="answer-input" class="answer-input" placeholder="Enter your answer here">
+    <button id="next-button" class="next-button" onclick="nextQuestion()">Next</button>
+    <button id="submit-button" class="submit-button" onclick="submitQuiz()" style="display: none;">Submit</button>
+  </div>
+</div>
+<div class="popup" id="popup">
+  <div id="results" class="results"></div>
+  <button class="close-button" onclick="closePopup()">Close</button>
+</div>
 
+<script>
+  let questions = [];
+  let currentQuestionIndex = 0;
+  let answers = [];
+  let selectedLevel = '';
+  const apiKey = "[[${apiKey}]]";
+
+  // 난이도 선택 후 퀴즈 시작
+  function selectLevel(level) {
+    selectedLevel = level;
+    document.querySelector('.level-selection').style.display = 'none';
+    document.querySelector('.quiz-container').style.display = 'block';
+    loadQuiz();
+  }
+
+  // 퀴즈 로드
+  function loadQuiz() {
+    fetch(`http://localhost:9000/api/quiz/start-proverb?level=${selectedLevel}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      questions = data;
+      displayQuestion();
+    });
+  }
+
+  // 현재 문제 표시
+  function displayQuestion() {
+    const question = questions[currentQuestionIndex];
+    document.getElementById('question-number').innerText = `${currentQuestionIndex + 1}/${questions.length}`;
+    document.getElementById('question').innerText = question.question;
+    document.getElementById('english-translation').innerText = question.english;
+    document.getElementById('answer-input').value = '';
+    document.getElementById('answer-input').focus();
+
+    // 버튼 상태 설정
+    if (currentQuestionIndex === questions.length - 1) {
+      document.getElementById('next-button').style.display = 'none';
+      document.getElementById('submit-button').style.display = 'block';
+    } else {
+      document.getElementById('next-button').style.display = 'block';
+      document.getElementById('submit-button').style.display = 'none';
+    }
+  }
+
+  // 다음 문제로 이동
+  function nextQuestion() {
+    const userAnswer = document.getElementById('answer-input').value.trim();
+    if (userAnswer === '') {
+      alert('Please enter your answer.');
+      return;
+    }
+    saveAnswer(userAnswer);
+    currentQuestionIndex++;
+    if (currentQuestionIndex < questions.length) {
+      displayQuestion();
+    }
+  }
+
+  // 마지막 답변 저장 및 퀴즈 제출
+  function submitQuiz() {
+    const userAnswer = document.getElementById('answer-input').value.trim();
+    if (userAnswer === '') {
+      alert('Please enter your answer.');
+      return;
+    }
+    saveAnswer(userAnswer);
+
+    // 제출 버튼 비활성화 및 텍스트 변경
+    const submitButton = document.getElementById('submit-button');
+    submitButton.disabled = true;
+    submitButton.innerText = 'Submitting...';
+
+    sendAnswersToServer();
+  }
+
+  // 답변 저장 함수
+  function saveAnswer(userAnswer) {
+    const question = questions[currentQuestionIndex];
+    answers.push({
+      question: question.question,
+      userAnswer: userAnswer,
+      correctAnswer: question.correctAnswer
+    });
+  }
+
+  // 서버로 답변 전송
+  function sendAnswersToServer() {
+    fetch('http://localhost:9000/api/quiz/evaluate-proverb', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey
+      },
+      body: JSON.stringify(answers),
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log('Received data:', data);
+      showPopup(data);
+    })
+    .catch(error => {
+      alert('An error occurred while submitting your answers. Please try again.');
+      // 제출 버튼을 다시 활성화하고 텍스트를 원래대로 변경
+      const submitButton = document.getElementById('submit-button');
+      submitButton.disabled = false;
+      submitButton.innerText = 'Submit';
+    });
+  }
+
+  // 결과 표시 함수
+  function showPopup(results) {
+    const resultsContainer = document.getElementById('results');
+    resultsContainer.innerHTML = '';
+
+    results.forEach((result, index) => {
+      const resultItem = document.createElement('div');
+      resultItem.className = 'result-item';
+
+      // 점수에 따른 클래스 결정
+      const scoreClass = result.score >= 80 ? 'score-good' : 'score-bad';
+
+      // 정답과 사용자 답변 스타일 적용
+      const correctSentence = `<span class="correct-answer">${result.correctSentence}</span>`;
+      const userSentence = `<span class="user-answer">${result.userSentence}</span>`;
+
+      resultItem.innerHTML = `
+          <div style="margin-bottom: 10px; font-weight: bold;">Q${index + 1}</div>
+          <div class="correct-answer">Answer: ${correctSentence}</div>
+          <div class="user-answer">You: ${userSentence}</div>
+          <div class="${scoreClass}">Score: ${result.score}</div>
+          <div class="${scoreClass}">Evaluation: ${result.evaluate}</div>
+          <hr>
+        `;
+      resultsContainer.appendChild(resultItem);
+    });
+
+    // 퀴즈 컨테이너 숨기기
+    document.getElementById('quiz-container').style.display = 'none';
+
+    // 팝업 표시
+    document.getElementById('popup').style.display = 'block';
+  }
+
+  function closePopup() {
+    window.location.href = 'http://localhost:9000'; // 메인 페이지로 이동
+  }
+
+</script>
 </body>
 </html>

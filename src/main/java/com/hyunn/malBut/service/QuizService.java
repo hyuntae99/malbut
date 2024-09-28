@@ -3,21 +3,31 @@ package com.hyunn.malBut.service;
 import com.hyunn.malBut.dto.request.EvaluateProverbRequest;
 import com.hyunn.malBut.dto.request.GradeWordRequest;
 import com.hyunn.malBut.dto.response.EvaluateProverbResponse;
+import com.hyunn.malBut.dto.response.PythonEvaluationResponse;
 import com.hyunn.malBut.dto.response.QuizProverbResponse;
 import com.hyunn.malBut.dto.response.QuizWordResponse;
 import com.hyunn.malBut.entity.Proverb;
 import com.hyunn.malBut.entity.Word;
 import com.hyunn.malBut.exception.ApiKeyNotValidException;
+import com.hyunn.malBut.exception.ApiNotFoundException;
 import com.hyunn.malBut.repository.ProverbJpaRepository;
 import com.hyunn.malBut.repository.WordJpaRepository;
+import org.springframework.http.HttpHeaders;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 @Service
 @RequiredArgsConstructor
@@ -26,8 +36,12 @@ public class QuizService {
   @Value("${spring.security.x-api-key}")
   private String xApiKey;
 
+  @Value("${flask.url}")
+  private String flaskApiUrl;
+
   private final WordJpaRepository wordRepository;
   private final ProverbJpaRepository proverbJpaRepository;
+  private final RestTemplate restTemplate;
 
   /**
    * 20개의 문제를 난이도에 맞게 단어 퀴즈를 생성
@@ -47,7 +61,8 @@ public class QuizService {
 
     switch (level.toLowerCase()) {
       case "beginner":
-        easyCount = 20;
+        easyCount = 19;
+        hardCount = 1;
         break;
       case "intermediate":
         easyCount = 15;
@@ -159,11 +174,12 @@ public class QuizService {
 
     switch (level.toLowerCase()) {
       case "beginner":
-        easyCount = 10;
+        easyCount = 9;
+        hardCount = 1;
         break;
       case "intermediate":
-        easyCount = 8;
-        hardCount = 2;
+        easyCount = 7;
+        hardCount = 3;
         break;
       case "advanced":
         easyCount = 5;
@@ -197,17 +213,82 @@ public class QuizService {
   /**
    * 속담/구문 퀴즈 채점 및 평가
    */
-  public List<EvaluateProverbResponse> gradeProverbQuiz(List<EvaluateProverbRequest> answers, String apiKey) {
+  public List<EvaluateProverbResponse> gradeProverbQuiz(
+      List<EvaluateProverbRequest> answers, String apiKey) {
+
     // API KEY 유효성 검사
     if (apiKey == null || !apiKey.equals(xApiKey)) {
-      throw new ApiKeyNotValidException("API KEY가 올바르지 않습니다.");
+      throw new ApiKeyNotValidException("Invalid API KEY.");
     }
 
-    // flask에 요청을 보내야함
+    try {
+      // 요청 데이터 생성
+      List<Map<String, String>> requestData = new ArrayList<>();
+      for (EvaluateProverbRequest answer : answers) {
+        if (answer.getQuestion() == null || answer.getCorrectAnswer() == null || answer.getUserAnswer() == null) {
+          throw new IllegalArgumentException("Question, correctAnswer, and userAnswer must not be null.");
+        }
 
-    // 응답 파싱
+        // 유저 응답 문장 생성
+        String userAnswer = answer.getQuestion().replace("_", answer.getUserAnswer());
 
-    return null;
+        Map<String, String> sentencePair = new HashMap<>();
+        sentencePair.put("sentence1", answer.getCorrectAnswer());
+        sentencePair.put("sentence2", userAnswer);
+        requestData.add(sentencePair);
+      }
+
+      // 헤더 설정
+      HttpHeaders headers = new HttpHeaders();
+      headers.setContentType(MediaType.APPLICATION_JSON);
+
+      // 요청 엔티티 생성
+      HttpEntity<List<Map<String, String>>> requestEntity = new HttpEntity<>(requestData, headers);
+
+      // Python API 호출
+      ResponseEntity<PythonEvaluationResponse[]> responseEntity = restTemplate.postForEntity(
+          flaskApiUrl, requestEntity, PythonEvaluationResponse[].class);
+
+      // Python API 호출 후
+      PythonEvaluationResponse[] responseArray = responseEntity.getBody();
+
+      if (responseArray == null) {
+        throw new RuntimeException("No response from Python server.");
+      }
+
+      List<PythonEvaluationResponse> pythonResponses = Arrays.asList(responseArray);
+
+      // 결과 리스트 생성
+      List<EvaluateProverbResponse> resultList = new ArrayList<>();
+
+      // 응답 매핑
+      for (int i = 0; i < pythonResponses.size(); i++) {
+        PythonEvaluationResponse pythonResponse = pythonResponses.get(i);
+
+        int score = (int) Math.round(pythonResponse.getFinal_score());
+
+        String evaluate;
+        if (score == 100) {
+          evaluate = "Perfect!";
+        } else if (score >= 80) {
+          evaluate = "Very Good!";
+        } else {
+          evaluate = "Wrong Answer";
+        }
+
+        EvaluateProverbResponse response = EvaluateProverbResponse.create(
+            pythonResponse.getSentence1(), // 정답 문장
+            pythonResponse.getSentence2(), // 사용자 문장
+            score, // 점수
+            evaluate // 평가 문구
+        );
+        resultList.add(response);
+      }
+
+      return resultList;
+
+    } catch (Exception e) {
+      throw new ApiNotFoundException("Error calling Flask API: " + e.getMessage());
+    }
   }
-
 }
