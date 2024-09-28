@@ -42,6 +42,7 @@ dependencies {
 	// timeLeaf 의존성
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 
+	// 데이터 직렬화 의존성
 	implementation 'com.fasterxml.jackson.core:jackson-databind'
 }
 
