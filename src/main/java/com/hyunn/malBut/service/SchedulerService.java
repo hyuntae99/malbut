@@ -21,7 +21,7 @@ public class SchedulerService {
   @PostConstruct
   public void init() {
     // 애플리케이션 시작 시 즉시 실행
-    // sendEmails();
+    sendEmails();
   }
 
   @Scheduled(cron = "0 0 9 * * *", zone = "Asia/Seoul") // 오전 9시에 실행

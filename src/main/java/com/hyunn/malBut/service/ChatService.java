@@ -33,6 +33,9 @@ public class ChatService {
   @Value("${chatgpt.url}")
   private String OPENAI_API_URL;
 
+  @Value("${chatgpt.prompt.chatTemplate}")
+  private String PROMPT_CHAT_TEMPLATE;
+
   private final RestTemplate restTemplate;
   private final Map<String, List<Map<String, String>>> sessionStorage = new HashMap<>(); // 세션 저장소를 대화 기록 저장소로 수정
   private final ObjectMapper objectMapper = new ObjectMapper(); // JSON 처리
@@ -51,13 +54,10 @@ public class ChatService {
     if (!sessionStorage.containsKey(sessionId)) {
       sessionStorage.put(sessionId, new ArrayList<>()); // 대화 기록을 리스트로 관리
       Map<String, String> initialPrompt = new HashMap<>();
+
       initialPrompt.put("role", "system");
-      initialPrompt.put("content", "You are a Korean teacher who is like a friend to my foreign friends."
-          + "The topic is '" + userInput + "'."
-          + "If I speak awkwardly or use the wrong words, please correct me."
-          + "The most important thing I want to emphasize is that if any corrections are needed, please provide the corrected sentence along with the English translation and the Korean pronunciation that can be read in English."
-          + "If the sentences and words were used appropriately, continue the conversation."
-          + "Please give all answers in Korean.");
+      String content = PROMPT_CHAT_TEMPLATE.replace("{userInput}", userInput);
+      initialPrompt.put("content", content);
       sessionStorage.get(sessionId).add(initialPrompt);
     }
 

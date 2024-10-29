@@ -47,6 +47,9 @@ public class PronunciationService {
   @Value("${chatgpt.url}")
   private String OPENAI_API_URL;
 
+  @Value("${chatgpt.prompt.feedbackTemplate}")
+  private String PROMPT_FEEDBACK_TEMPLATE;
+
   private final ObjectMapper objectMapper = new ObjectMapper();
   private final RestTemplate restTemplate;
   private final PronunciationJpaRepository pronunciationRepository;
@@ -140,14 +143,13 @@ public class PronunciationService {
 
     List<Map<String, String>> messages = new ArrayList<>();
     Map<String, String> userPrompt = new HashMap<>();
+
     userPrompt.put("role", "user");
-    userPrompt.put("content",
-        "Here is the script: \"" + script + "\" and here is the recognized text: \"" +
-            recognizedText
-            + "\". Compare the two and provide feedback, rate the pronunciation out of 100, and suggest improvements. \n"
-            + "Please provide it in the form of \"Score:\" \"Improvement:\"\n"
-            + "Improvements should be expressed in one sentence to sum up the most important part, Please give it a very very generous score since it was pronounced by a foreigner."
-            + "If the evaluation score is 90 or higher, please give praise instead of suggestions for improvement.");
+    String content = PROMPT_FEEDBACK_TEMPLATE
+            .replace("{script}", script)
+            .replace("{recognizedText}", recognizedText);
+    userPrompt.put("content", content);
+
     messages.add(userPrompt);
 
     requestBody.put("messages", messages);

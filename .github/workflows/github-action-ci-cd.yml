@@ -3,7 +3,7 @@ name: CI/CD
 on:
   push:
     branches:
-      - dev # 일단 dev로 설정
+      - main
 
 jobs:
   build:

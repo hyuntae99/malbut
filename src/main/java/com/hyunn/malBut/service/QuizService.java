@@ -3,7 +3,7 @@ package com.hyunn.malBut.service;
 import com.hyunn.malBut.dto.request.EvaluateProverbRequest;
 import com.hyunn.malBut.dto.request.GradeWordRequest;
 import com.hyunn.malBut.dto.response.EvaluateProverbResponse;
-import com.hyunn.malBut.dto.response.PythonEvaluationResponse;
+import com.hyunn.malBut.dto.response.FlaskEvaluationResponse;
 import com.hyunn.malBut.dto.response.QuizProverbResponse;
 import com.hyunn.malBut.dto.response.QuizWordResponse;
 import com.hyunn.malBut.entity.Proverb;
@@ -223,35 +223,35 @@ public class QuizService {
       // 요청 엔티티 생성
       HttpEntity<List<Map<String, String>>> requestEntity = new HttpEntity<>(requestData, headers);
 
-      // Python API 호출
-      ResponseEntity<PythonEvaluationResponse[]> responseEntity = restTemplate.postForEntity(
-          flaskApiUrl, requestEntity, PythonEvaluationResponse[].class);
+      // Flask API 호출
+      ResponseEntity<FlaskEvaluationResponse[]> responseEntity = restTemplate.postForEntity(
+          flaskApiUrl, requestEntity, FlaskEvaluationResponse[].class);
 
-      // Python API 호출 후
-      PythonEvaluationResponse[] responseArray = responseEntity.getBody();
+      // Flask API 호출 후
+      FlaskEvaluationResponse[] responseArray = responseEntity.getBody();
 
       if (responseArray == null) {
-        throw new ApiNotFoundException("No response from Python server.");
+        throw new ApiNotFoundException("No response from Flask server.");
       }
 
-      List<PythonEvaluationResponse> pythonResponses = Arrays.asList(responseArray);
+      List<FlaskEvaluationResponse> flaskResponses = Arrays.asList(responseArray);
 
       // 결과 리스트 생성
       List<EvaluateProverbResponse> resultList = new ArrayList<>();
 
       // 응답 매핑
-      for (int i = 0; i < pythonResponses.size(); i++) {
-        PythonEvaluationResponse pythonResponse = pythonResponses.get(i);
+      for (int i = 0; i < flaskResponses.size(); i++) {
+        FlaskEvaluationResponse flaskResponse = flaskResponses.get(i);
 
-        int score = (int) Math.round(pythonResponse.getFinal_score());
+        int score = (int) Math.round(flaskResponse.getFinal_score());
 
         String evaluate = evaluateProverb(score, apiKey);
 
         EvaluateProverbResponse response = EvaluateProverbResponse.create(
-            pythonResponse.getSentence1(), // 정답 문장
-            pythonResponse.getSentence2(), // 사용자 문장
-            score, // 점수
-            evaluate // 평가 문구
+                flaskResponse.getSentence1(), // 정답 문장
+                flaskResponse.getSentence2(), // 사용자 문장
+                score, // 점수
+                evaluate // 평가 문구
         );
         resultList.add(response);
       }
