@@ -326,7 +326,7 @@
 
   // 퀴즈 로드
   function loadQuiz() {
-    fetch(`http://localhost:9000/api/quiz/start-word?level=${selectedLevel}`, {
+    fetch(`https://project.hyunn.site/api/quiz/start-word?level=${selectedLevel}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -372,7 +372,7 @@
   }
 
   function submitQuiz() {
-    fetch('http://localhost:9000/api/quiz/grade-word', {
+    fetch('https://project.hyunn.site/api/quiz/grade-word', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -452,7 +452,7 @@
   }
 
   function closePopup() {
-    window.location.href = 'http://localhost:9000'; // 메인 페이지로 이동
+    window.location.href = 'https://project.hyunn.site'; // 메인 페이지로 이동
   }
 
   // 물방울 효과 이벤트 리스너 추가

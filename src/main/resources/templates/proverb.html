@@ -237,7 +237,7 @@
 
   // 퀴즈 로드
   function loadQuiz() {
-    fetch(`http://localhost:9000/api/quiz/start-proverb?level=${selectedLevel}`, {
+    fetch(`https://project.hyunn.site/api/quiz/start-proverb?level=${selectedLevel}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -313,7 +313,7 @@
 
   // 서버로 답변 전송
   function sendAnswersToServer() {
-    fetch('http://localhost:9000/api/quiz/evaluate-proverb', {
+    fetch('https://project.hyunn.site/api/quiz/evaluate-proverb', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -370,7 +370,7 @@
   }
 
   function closePopup() {
-    window.location.href = 'http://localhost:9000'; // 메인 페이지로 이동
+    window.location.href = 'https://project.hyunn.site'; // 메인 페이지로 이동
   }
 
 </script>

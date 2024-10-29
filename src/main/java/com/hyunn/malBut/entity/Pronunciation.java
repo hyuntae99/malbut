@@ -17,21 +17,21 @@ import lombok.ToString;
 @NoArgsConstructor
 public class Pronunciation {
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Column(name = "pronunciation_id")
-  private Long pronunciationId;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "pronunciation_id")
+    private Long pronunciationId;
 
-  // 한국어 문장
-  @Column(name = "korean")
-  private String korean;
+    // 한국어 문장
+    @Column(name = "korean")
+    private String korean;
 
-  // 난이도
-  @Column(name = "level")
-  private String level;
+    // 난이도
+    @Column(name = "level")
+    private String level;
 
-  // mp3 링크
-  @Column(name = "link")
-  private String link;
+    // mp3 링크
+    @Column(name = "link")
+    private String link;
 
 }

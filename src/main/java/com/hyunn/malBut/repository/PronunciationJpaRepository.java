@@ -6,6 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PronunciationJpaRepository extends JpaRepository<Pronunciation, Long> {
 
-  List<Pronunciation> findByLevel(String level);
+    List<Pronunciation> findByLevel(String level);
 
 }
