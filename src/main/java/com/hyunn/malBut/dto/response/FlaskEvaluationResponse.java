@@ -8,7 +8,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class PythonEvaluationResponse {
+public class FlaskEvaluationResponse {
 
   @Schema(description = "속담 (정답)")
   private String sentence1;
