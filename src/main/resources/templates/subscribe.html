@@ -165,7 +165,7 @@
       timerInterval = setInterval(updateTimer, 1000);
       updateTimer();
 
-      fetch(`http://localhost:9000/api/user/code?email=${email}`, {
+      fetch(`https://project.hyunn.site/api/user/code?email=${email}`, {
         method: 'POST',
         headers: {
           'x-api-key' : apiKey
@@ -194,7 +194,7 @@
       const email = emailAuthInput.value.trim();
       const code = codeInput.value.trim();
 
-      fetch(`http://localhost:9000/api/user/authentication?email=${email}&code=${code}`, {
+      fetch(`https://project.hyunn.site/api/user/authentication?email=${email}&code=${code}`, {
         method: 'POST',
         headers: {
           'x-api-key' : apiKey
@@ -223,7 +223,7 @@
     });
 
     function registerEmail(email) {
-      fetch(`http://localhost:9000/api/user?email=${email}`, {
+      fetch(`https://project.hyunn.site/api/user?email=${email}`, {
         method: 'POST',
         headers: {
           'x-api-key' : apiKey
@@ -233,7 +233,7 @@
       .then(data => {
         if (data.code == "00") {
           alert('The service has been successfully registered.');
-          window.location.href = 'http://localhost:9000';
+          window.location.href = 'https://project.hyunn.site';
         } else {
           alert(data.data.data);
         }

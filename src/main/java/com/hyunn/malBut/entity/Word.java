@@ -17,22 +17,22 @@ import lombok.ToString;
 @NoArgsConstructor
 public class Word {
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Column(name = "word_id")
-  private Long wordId;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "word_id")
+    private Long wordId;
 
-  // 영어 단어
-  @Column(name = "english")
-  private String english;
+    // 영어 단어
+    @Column(name = "english")
+    private String english;
 
-  // 한국어 단어
-  @Column(name = "korean")
-  private String korean;
+    // 한국어 단어
+    @Column(name = "korean")
+    private String korean;
 
-  // 난이도
-  @Column(name = "level")
-  private boolean level;
+    // 난이도
+    @Column(name = "level")
+    private boolean level;
 
 }
 

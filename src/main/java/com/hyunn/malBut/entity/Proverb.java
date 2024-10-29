@@ -17,22 +17,22 @@ import lombok.ToString;
 @NoArgsConstructor
 public class Proverb {
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Column(name = "proverb_id")
-  private Long proverbId;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "proverb_id")
+    private Long proverbId;
 
-  // 영어 속담
-  @Column(name = "english")
-  private String english;
+    // 영어 속담
+    @Column(name = "english")
+    private String english;
 
-  // 한국어 속담
-  @Column(name = "korean")
-  private String korean;
+    // 한국어 속담
+    @Column(name = "korean")
+    private String korean;
 
-  // 질문
-  @Column(name = "question")
-  private String question;
+    // 질문
+    @Column(name = "question")
+    private String question;
 
 }
 

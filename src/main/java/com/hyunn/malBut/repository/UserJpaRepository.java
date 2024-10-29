@@ -7,10 +7,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface UserJpaRepository extends JpaRepository<User, Long> {
 
-  Optional<User> findUserByEmail(String email);
+    Optional<User> findUserByEmail(String email);
 
-  boolean existsUserByEmail(String email);
+    boolean existsUserByEmail(String email);
 
-  List<User> findAllByStatusTrue();
+    List<User> findAllByStatusTrue();
 
 }

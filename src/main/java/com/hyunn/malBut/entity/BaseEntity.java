@@ -17,15 +17,15 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @MappedSuperclass
 public abstract class BaseEntity {
 
-  // 수정 시간
-  @LastModifiedDate
-  @Column(name = "date", nullable = false)
-  private LocalDateTime date;
+    // 수정 시간
+    @LastModifiedDate
+    @Column(name = "date", nullable = false)
+    private LocalDateTime date;
 
-  @PrePersist
-  @PreUpdate
-  protected void onUpdate() {
-    ZoneId koreaZoneId = ZoneId.of("Asia/Seoul");
-    this.date = ZonedDateTime.now(koreaZoneId).toLocalDateTime();
-  }
+    @PrePersist
+    @PreUpdate
+    protected void onUpdate() {
+        ZoneId koreaZoneId = ZoneId.of("Asia/Seoul");
+        this.date = ZonedDateTime.now(koreaZoneId).toLocalDateTime();
+    }
 }
