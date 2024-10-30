@@ -1,9 +1,10 @@
 package com.hyunn.malBut.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hyunn.malBut.dto.request.EvaluateProverbRequest;
 import com.hyunn.malBut.dto.request.GradeWordRequest;
 import com.hyunn.malBut.dto.response.EvaluateProverbResponse;
-import com.hyunn.malBut.dto.response.FlaskEvaluationResponse;
 import com.hyunn.malBut.dto.response.QuizProverbResponse;
 import com.hyunn.malBut.dto.response.QuizWordResponse;
 import com.hyunn.malBut.entity.Proverb;
@@ -13,7 +14,6 @@ import com.hyunn.malBut.exception.ApiNotFoundException;
 import com.hyunn.malBut.repository.ProverbJpaRepository;
 import com.hyunn.malBut.repository.WordJpaRepository;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -23,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,12 +36,25 @@ public class QuizService {
     @Value("${spring.security.x-api-key}")
     private String xApiKey;
 
-    @Value("${flask.url}")
-    private String flaskApiUrl;
+    @Value("${chatgpt.api-key}")
+    private String OPENAI_API_KEY;
+
+    @Value("${chatgpt.model}")
+    private String MODEL_NAME;
+
+    @Value("${chatgpt.url}")
+    private String OPENAI_API_URL;
+
+    @Value("${chatgpt.prompt.proverbTemplate1}")
+    private String PROMPT_FEEDBACK_TEMPLATE1;
+
+    @Value("${chatgpt.prompt.proverbTemplate2}")
+    private String PROMPT_FEEDBACK_TEMPLATE2;
 
     private final WordJpaRepository wordRepository;
     private final ProverbJpaRepository proverbJpaRepository;
     private final RestTemplate restTemplate;
+    private final ObjectMapper objectMapper = new ObjectMapper(); // JSON 처리
 
     /**
      * 20개의 문제를 난이도에 맞게 단어 퀴즈를 생성
@@ -73,6 +86,7 @@ public class QuizService {
                 hardCount = 15;
                 break;
             default:
+                // 발생할 일은 없음
                 throw new IllegalArgumentException("잘못된 난이도: " + level);
         }
 
@@ -164,6 +178,7 @@ public class QuizService {
                 hardCount = 5;
                 break;
             default:
+                // 발생할 일 없음
                 throw new IllegalArgumentException("잘못된 난이도: " + level);
         }
 
@@ -200,68 +215,127 @@ public class QuizService {
         }
 
         try {
-            // 요청 데이터 생성
-            List<Map<String, String>> requestData = new ArrayList<>();
-            for (EvaluateProverbRequest answer : answers) {
-                if (answer.getQuestion() == null || answer.getCorrectAnswer() == null
-                        || answer.getUserAnswer() == null) {
-                    throw new ApiNotFoundException("Question, correctAnswer, and userAnswer must not be null.");
-                }
+            // GPT를 호출하여 평가
+            String gptResponse = evaluateProverbsWithGpt(answers);
 
-                // 유저 응답 문장 생성
-                String userAnswer = answer.getQuestion().replace("_", answer.getUserAnswer());
-
-                Map<String, String> sentencePair = new HashMap<>();
-                sentencePair.put("sentence1", answer.getCorrectAnswer());
-                sentencePair.put("sentence2", userAnswer);
-                requestData.add(sentencePair);
-            }
-
-            // 헤더 설정
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-
-            // 요청 엔티티 생성
-            HttpEntity<List<Map<String, String>>> requestEntity = new HttpEntity<>(requestData, headers);
-
-            // Flask API 호출
-            ResponseEntity<FlaskEvaluationResponse[]> responseEntity = restTemplate.postForEntity(
-                    flaskApiUrl, requestEntity, FlaskEvaluationResponse[].class);
-
-            // Flask API 호출 후
-            FlaskEvaluationResponse[] responseArray = responseEntity.getBody();
-
-            if (responseArray == null) {
-                throw new ApiNotFoundException("No response from Flask server.");
-            }
-
-            List<FlaskEvaluationResponse> flaskResponses = Arrays.asList(responseArray);
-
-            // 결과 리스트 생성
-            List<EvaluateProverbResponse> resultList = new ArrayList<>();
-
-            // 응답 매핑
-            for (int i = 0; i < flaskResponses.size(); i++) {
-                FlaskEvaluationResponse flaskResponse = flaskResponses.get(i);
-
-                int score = (int) Math.round(flaskResponse.getFinal_score());
-
-                String evaluate = evaluateProverb(score, apiKey);
-
-                EvaluateProverbResponse response = EvaluateProverbResponse.create(
-                        flaskResponse.getSentence1(), // 정답 문장
-                        flaskResponse.getSentence2(), // 사용자 문장
-                        score, // 점수
-                        evaluate // 평가 문구
-                );
-                resultList.add(response);
-            }
+            // GPT 응답 파싱
+            List<EvaluateProverbResponse> resultList = parseGptResponse(gptResponse, answers);
 
             return resultList;
 
         } catch (Exception e) {
-            throw new ApiNotFoundException("Error calling Flask API: " + e.getMessage());
+            throw new ApiNotFoundException("GPT API 호출 중 오류 발생: " + e.getMessage());
         }
+    }
+
+    /**
+     * GPT에 속담 평가 요청
+     */
+    private String evaluateProverbsWithGpt(List<EvaluateProverbRequest> answers) throws Exception {
+        // 프롬프트 생성
+        StringBuilder promptBuilder = new StringBuilder();
+        promptBuilder.append(PROMPT_FEEDBACK_TEMPLATE1);
+
+        int index = 1;
+        for (EvaluateProverbRequest answer : answers) {
+            if (answer.getQuestion() == null || answer.getCorrectAnswer() == null || answer.getUserAnswer() == null) {
+                throw new ApiNotFoundException("Question, correctAnswer, userAnswer는 null이 아니어야 합니다.");
+            }
+
+            // 유저 응답 문장 생성
+            String userAnswer = answer.getQuestion().replace("_", answer.getUserAnswer());
+
+            promptBuilder.append(index).append(".\n");
+            promptBuilder.append("Correct Answer: ").append(answer.getCorrectAnswer()).append("\n");
+            promptBuilder.append("User Answer: ").append(userAnswer).append("\n\n");
+
+            index++;
+        }
+
+        promptBuilder.append(PROMPT_FEEDBACK_TEMPLATE2);
+
+        // GPT API 호출
+        String gptResponse = callGptApi(promptBuilder.toString());
+
+        return gptResponse;
+    }
+
+    /**
+     * GPT API 호출
+     */
+    private String callGptApi(String prompt) {
+        // HTTP 요청 헤더 설정
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + OPENAI_API_KEY);
+        headers.set("Content-Type", "application/json");
+
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("model", MODEL_NAME);
+
+        List<Map<String, String>> messages = new ArrayList<>();
+        Map<String, String> userPrompt = new HashMap<>();
+
+        userPrompt.put("role", "user");
+        userPrompt.put("content", prompt);
+
+        messages.add(userPrompt);
+
+        requestBody.put("messages", messages);
+
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+        ResponseEntity<String> response = restTemplate.exchange(
+                OPENAI_API_URL,
+                HttpMethod.POST,
+                entity,
+                String.class
+        );
+
+        return response.getBody();
+    }
+
+    /**
+     * GPT 응답 파싱
+     */
+    private List<EvaluateProverbResponse> parseGptResponse(String gptResponse,
+                                                           List<EvaluateProverbRequest> answers) throws Exception {
+        // GPT 응답 파싱
+        JsonNode gptJsonResponse = objectMapper.readTree(gptResponse);
+        String content = gptJsonResponse.get("choices").get(0).get("message").get("content").asText();
+
+        // JSON 부분만 추출
+        int jsonStartIndex = content.indexOf("{");
+        int jsonEndIndex = content.lastIndexOf("}") + 1;
+        String jsonString = content.substring(jsonStartIndex, jsonEndIndex);
+
+        JsonNode jsonResponse = objectMapper.readTree(jsonString);
+        JsonNode resultsArray = jsonResponse.get("results");
+
+        if (!resultsArray.isArray()) {
+            throw new ApiNotFoundException("GPT 응답이 올바른 JSON 형식이 아닙니다.");
+        }
+
+        List<EvaluateProverbResponse> resultList = new ArrayList<>();
+
+        for (int i = 0; i < resultsArray.size(); i++) {
+            JsonNode resultNode = resultsArray.get(i);
+
+            int score = resultNode.get("score").asInt();
+            String feedback = resultNode.get("feedback").asText();
+
+            EvaluateProverbRequest answer = answers.get(i);
+            String userAnswer = answer.getQuestion().replace("_", answer.getUserAnswer());
+
+            EvaluateProverbResponse response = EvaluateProverbResponse.create(
+                    answer.getCorrectAnswer(),
+                    userAnswer,
+                    score,
+                    feedback
+            );
+
+            resultList.add(response);
+        }
+
+        return resultList;
     }
 
     /**
@@ -283,26 +357,6 @@ public class QuizService {
             return "D";
         } else {
             return "F";
-        }
-    }
-
-    /**
-     * 점수에 대한 평가표
-     */
-    public String evaluateProverb(int score, String apiKey) {
-        // API KEY 유효성 검사
-        if (apiKey == null || !apiKey.equals(xApiKey)) {
-            throw new ApiKeyNotValidException("API KEY가 올바르지 않습니다.");
-        }
-
-        if (score == 100) {
-            return "Perfect!";
-        } else if (score >= 80) {
-            return "Good Job!";
-        } else if (score >= 60) {
-            return "Not Accurate";
-        } else {
-            return "That's Wrong";
         }
     }
 }

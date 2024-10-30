@@ -47,7 +47,7 @@ public class PronunciationService {
     @Value("${chatgpt.url}")
     private String OPENAI_API_URL;
 
-    @Value("${chatgpt.prompt.feedbackTemplate}")
+    @Value("${chatgpt.prompt.pronunciationTemplate}")
     private String PROMPT_FEEDBACK_TEMPLATE;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
