@@ -259,7 +259,7 @@
 <!-- 발음 테스트 화면 -->
 <div class="container">
   <h1>Pronunciation Test</h1>
-  <h2>Please press the record button <br> and speak after 1 second.</h2>
+  <h2>Please press the record button <br> and speak after 1~2 second.</h2>
   <p id="script">Loading Script...</p>
   <button id="playAudioBtn" style="display: none;">🔊</button>
   <button id="recordBtn">Record</button>
@@ -349,6 +349,7 @@
         const formData = new FormData();
         formData.append('audio', audioBlob);
         formData.append('script', scriptElement.textContent);
+
         const response = await fetch('/api/evaluate-pronunciation', {
           method: 'POST',
           body: formData,
