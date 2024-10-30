@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -20,6 +22,8 @@ import org.springframework.web.client.RestTemplate;
 @Service
 @RequiredArgsConstructor
 public class ChatService {
+
+    private static final Logger logger = LoggerFactory.getLogger(ChatService.class);
 
     @Value("${spring.security.x-api-key}")
     private String xApiKey;
@@ -41,10 +45,13 @@ public class ChatService {
     private final ObjectMapper objectMapper = new ObjectMapper(); // JSON 처리
 
     /**
-     * gpt 챗봇 초기 설정
+     * GPT 챗봇 초기 설정 및 대화 처리
      */
     @Transactional
     public String processChat(String sessionId, String userInput, String apiKey) {
+        // 로그 출력: 사용자 입력
+        logger.info("User Input: {}", userInput);
+
         // API KEY 유효성 검사
         if (apiKey == null || !apiKey.equals(xApiKey)) {
             throw new ApiKeyNotValidException("API KEY가 올바르지 않습니다.");
@@ -72,7 +79,7 @@ public class ChatService {
     }
 
     /**
-     * gpt 챗봇 대화
+     * GPT 챗봇 대화
      */
     @Transactional
     public String callOpenAiApi(String sessionId) {
