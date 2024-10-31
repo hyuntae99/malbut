@@ -2,14 +2,14 @@ package com.hyunn.malBut.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hyunn.malBut.entity.Chat;
 import com.hyunn.malBut.exception.ApiKeyNotValidException;
+import com.hyunn.malBut.repository.ChatRepository;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -22,8 +22,6 @@ import org.springframework.web.client.RestTemplate;
 @Service
 @RequiredArgsConstructor
 public class ChatService {
-
-    private static final Logger logger = LoggerFactory.getLogger(ChatService.class);
 
     @Value("${spring.security.x-api-key}")
     private String xApiKey;
@@ -41,6 +39,8 @@ public class ChatService {
     private String PROMPT_CHAT_TEMPLATE;
 
     private final RestTemplate restTemplate;
+    private final ChatRepository chatRepository;
+
     private final Map<String, List<Map<String, String>>> sessionStorage = new HashMap<>(); // 세션 저장소를 대화 기록 저장소로 수정
     private final ObjectMapper objectMapper = new ObjectMapper(); // JSON 처리
 
@@ -49,9 +49,6 @@ public class ChatService {
      */
     @Transactional
     public String processChat(String sessionId, String userInput, String apiKey) {
-        // 로그 출력: 사용자 입력
-        logger.info("User Input: {}", userInput);
-
         // API KEY 유효성 검사
         if (apiKey == null || !apiKey.equals(xApiKey)) {
             throw new ApiKeyNotValidException("API KEY가 올바르지 않습니다.");
@@ -61,7 +58,6 @@ public class ChatService {
         if (!sessionStorage.containsKey(sessionId)) {
             sessionStorage.put(sessionId, new ArrayList<>()); // 대화 기록을 리스트로 관리
             Map<String, String> initialPrompt = new HashMap<>();
-
             initialPrompt.put("role", "system");
             String content = PROMPT_CHAT_TEMPLATE.replace("{userInput}", userInput);
             initialPrompt.put("content", content);
@@ -73,6 +69,10 @@ public class ChatService {
         userMessage.put("role", "user");
         userMessage.put("content", userInput);
         sessionStorage.get(sessionId).add(userMessage);
+
+        // DB 저장 -> 로그 줄이기
+        Chat chat = Chat.create(userInput);
+        chatRepository.save(chat);
 
         // OpenAI API 호출
         return callOpenAiApi(sessionId);
