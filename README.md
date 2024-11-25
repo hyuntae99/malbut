@@ -218,5 +218,5 @@ AWS freetire 서버의 한계로 flask의 모델을 사용이 힘들었습니다
 <br>보다 높은 수준의 학습 경험을 제공할 수 있을 것이라고 생각합니다.
 <br><br>
 
-### 더 많은 정보는 [발표영상](https://youtu.be/ZWVOgQ6WW7c?si=fDE5nHkoOVykHuGc)에서 확인하실 수 있습니다.
+### 더 많은 정보는 [발표영상](https://www.youtube.com/watch?v=ivX7MP9aIa0)에서 확인하실 수 있습니다.
 <br>
